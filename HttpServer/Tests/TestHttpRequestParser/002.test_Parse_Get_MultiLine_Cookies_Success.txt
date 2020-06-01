@@ -1,0 +1,7 @@
+Get /index.html HTTP/1.1
+User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)
+Host: www.unittest.com
+Cookie: test_cookie_1=cookie_value1; test_cookie_2 = value_cookies2
+Accept-Language: en-us
+Accept-Encoding: gzip, deflate
+Connection: Keep-Alive

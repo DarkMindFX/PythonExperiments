@@ -1,0 +1,6 @@
+{
+    "Port": "8989",
+    "Root": "wwwroot",
+    "Scripts": "wwwroot/scripts",
+    "ScriptsExtensions": ".py;"
+}

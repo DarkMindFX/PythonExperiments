@@ -131,31 +131,35 @@ class ConnectionHandler:
             is_keep_alive = False
 
             if(self.Request != 0):
+                try:
+                    if('Connection' in self.Request.Parameters and str(self.Request.Parameters['Connection']).lower() == 'keep-alive'):
+                        is_keep_alive = True
 
-                if('Connection' in self.Request.Parameters and str(self.Request.Parameters['Connection']).lower() == 'keep-alive'):
-                    is_keep_alive = True
+                    httpCode = 200 # OK by default
+                    httpRespBody = "" # emprty response
+                    httpHeaders = dict()
+                    httpCookies = dict()
 
-                httpCode = 200 # OK by default
-                httpRespBody = "" # emprty response
-                httpHeaders = dict()
-                httpCookies = dict()
+                    fmResp = self.FileManager.GetFileContent(self.Request.FileName)
+                    if(fmResp.Error == fm.FileManagerErrors.Success):
+                        httpCode = 200
 
-                fmResp = self.FileManager.GetFileContent(self.Request.FileName)
-                if(fmResp.Error == fm.FileManagerErrors.Success):
-                    httpCode = 200
-
-                    if(self.ServerConfig != 0 and self.Request.Extension in self.ServerConfig.Scripts):
-                        smgr = sm.ScriptManager()
-                        scriptOut = smgr.Execute(self.Request,  fmResp.Content.decode("utf-8"))
-                        httpRespBody = scriptOut
+                        if(self.ServerConfig != 0 and self.ServerConfig.IsScript(self.Request.FileName)):
+                            smgr = sm.ScriptManager()
+                            scriptOut = smgr.Execute(self.Request,  fmResp.Content.decode("utf-8"))
+                            httpRespBody = scriptOut
+                        else:
+                            httpRespBody = fmResp.Content
+                    elif(fmResp.Error == fm.FileManagerErrors.FileNotFile):
+                        httpCode = 404
+                        r = self.DefPagesFileManager.GetFileContent("404.FileNotFound.html")
+                        httpRespBody = r.Content
                     else:
-                        httpRespBody = fmResp.Content
-                elif(fmResp.Error == fm.FileManagerErrors.FileNotFile):
-                    httpCode = 404
-                    r = self.DefPagesFileManager.GetFileContent("404.FileNotFound.html")
-                    httpRespBody = r.Content
-                else:
-                    httpCode = 500 # Internal Server Error
+                        httpCode = 500 # Internal Server Error
+                        r = self.DefPagesFileManager.GetFileContent("500.InternalServerError.html")
+                        httpRespBody = r.Content
+                except:
+                    httpCode = 500  # Internal Server Error
                     r = self.DefPagesFileManager.GetFileContent("500.InternalServerError.html")
                     httpRespBody = r.Content
 
@@ -163,6 +167,8 @@ class ConnectionHandler:
                 httpResp = hresp.HttpResponse(httpCode, httpHeaders, httpCookies, httpRespBody)
                 httpResp.ContentType = contentType
                 self.SendResponse(httpResp)
+
+                print("Request {} processed OK".format(self.Request.Uri))
 
 
 class HttpServer:
@@ -181,7 +187,6 @@ class HttpServer:
     def ProcessingThread(self, connHandler):
         try:
             connHandler.Process()
-            print("Request processed OK")
         except:
             print("Oops!", sys.exc_info()[0], "occurred.")
 
@@ -192,6 +197,9 @@ class HttpServer:
             self.ServerSocket.bind(('', self.ServerConfig.Port))
             self.ServerSocket.listen(5)
             self.IsListening = True
+
+            print('HttpServer started at port {}'.format(self.ServerConfig.Port))
+
             while self.IsListening:
                 try:
                     (socket, address) = self.ServerSocket.accept()

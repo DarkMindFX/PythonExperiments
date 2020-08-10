@@ -1,7 +1,0 @@
-{
-    "Port": "8989",
-    "Root": "wwwroot",
-    "DefaultPages": "DefaultPages",
-    "Scripts": "wwwroot/cgi",
-    "ScriptsExtensions": ".py;"
-}

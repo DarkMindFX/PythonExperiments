@@ -1,0 +1,17 @@
+{
+    "Port": "8989",
+    "Root": "wwwroot",
+    "DefaultPages": "DefaultPages",
+    "Scripts": "wwwroot/cgi",
+    "ScriptsExtensions":
+        [
+            ".py"
+        ],
+    "IsMaster": "False",
+    "Others":
+        [
+            "localhost:8990",
+            "localhost:8991",
+            "localhost:8992"
+        ]
+}
